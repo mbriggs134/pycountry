@@ -55,7 +55,7 @@ class ExistingCountries(pycountry.db.Database):
     root_key = "3166-1"
 
     def search_fuzzy(self, query: str) -> List[Type["ExistingCountries"]]:
-        query = remove_accents(query.strip().lower())
+        query = query.strip().lower()
 
         # A country-code to points mapping for later sorting countries
         # based on the query's matching incidence.
@@ -71,12 +71,30 @@ class ExistingCountries(pycountry.db.Database):
         except LookupError:
             pass
 
+        # Remove accents for all future queries
+        query = remove_accents(query)
+
+        # Prio 1.1: matches minus accents on country names
+        for candidate in self:
+            name_matches = [
+                candidate._fields.get("name"),
+                candidate._fields.get("official_name"),
+            ]
+            accentless_names = [
+                remove_accents(x.lower()) if x is not None else None
+                for x in name_matches
+            ]
+            # Accentless exact match with name or official_name
+            if query in accentless_names:
+                add_result(candidate, 49)
+                break
+
         # Prio 2: exact matches on subdivision names
         match_subdivions = pycountry.Subdivisions.match(
             self=subdivisions, query=query
         )
         for candidate in match_subdivions:
-            add_result(candidate.country, 49)
+            add_result(candidate.country, 48)
 
         # Prio 3: partial matches on country names
         for candidate in self:

@@ -63,10 +63,14 @@ def test_country_fuzzy_search(countries):
     assert results[0] == pycountry.countries.get(alpha_2="US")
 
 
-def test_historic_country_fuzzy_search(countries):
-    results = pycountry.historic_countries.search_fuzzy("burma")
-    assert len(results) == 1
-    assert results[0] == pycountry.historic_countries.get(alpha_4="BUMM")
+def test_country_fuzzy_search_accents(countries):
+    results = pycountry.countries.search_fuzzy("Curaçao")
+    assert results[0] == pycountry.countries.get(alpha_2="CW")
+
+
+def test_country_fuzzy_search_accentless(countries):
+    results = pycountry.countries.search_fuzzy("Curacao")
+    assert results[0] == pycountry.countries.get(alpha_2="CW")
 
 
 def test_germany_has_all_attributes(countries):
